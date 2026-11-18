@@ -231,6 +231,12 @@ swift test
 
 每个账号都由你选择并确认，随后应用会自动完成 Codex Desktop 交接。应用不会在后台轮换账号，也不会根据用量阈值切换。
 
+### 切换后本地项目消失怎么办？
+
+本分支为 macOS 的旧版账号侧边栏状态增加了兼容处理：Desktop 正常退出且目标凭证校验通过后，将缺失的本地项目及聊天归属补入目标账号快照，保留原有项目 ID，并优先保留目标账号已有的设置。云端关联项目和同目录不同 ID 的项目会跳过。写入前会保存完整备份；较新的状态格式由 Desktop 自行处理。此功能尚未通过真实 macOS 账号往返切换验证，Windows 暂未启用自动处理。
+
+如果当前项目列表为空、旧数据仍保存在非活动账号快照中，可完全退出 Desktop 后使用 `python3 scripts/restore_codex_projects.py` 预览，再添加 `--apply` 恢复；多个快照需用 `--source-index N` 选择。Windows 使用 `py -3`。工具需要单独安装 Python 3，不覆盖已有项目数据。备份位置、撤销步骤和验证限制见[本地项目保留说明（英文）](docs/project-state-preservation.md)。请勿公开状态文件或备份。
+
 ### 账号数据会离开本机吗？
 
 macOS 数据位于 `~/Library/Application Support/Codex Account Switcher/`，Windows 数据位于 `%LOCALAPPDATA%\Codex Account Switcher\`，均使用仅当前用户可访问的本地存储。应用没有账号代理、流量转发或云端配置服务。

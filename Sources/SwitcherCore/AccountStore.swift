@@ -355,6 +355,26 @@ public actor AccountStore: AccountStoring {
         guard let index = current.accounts.firstIndex(where: { $0.id == id }) else {
             throw AccountStoreError.profileNotFound
         }
+        #if canImport(CryptoKit)
+        // SwitchService calls this only after Desktop exits and the target
+        // credential is verified. Seed its legacy renderer snapshot before launch.
+        if let original = current.activeAccountID {
+            let stateURL = activeHomeURL.appending(path: ".codex-global-state.json")
+            if fileManager.fileExists(atPath: stateURL.path) {
+                let originalBytes = try readChecked(stateURL)
+                if let sourceOwner = try LocalProjectHandoff.owner(credential: readChecked(profileHome(id: original).appending(path: "auth.json"))),
+                   let targetOwner = try LocalProjectHandoff.owner(credential: readChecked(activeHomeURL.appending(path: "auth.json"))),
+                   let updated = try LocalProjectHandoff.prepare(originalBytes, sourceOwner: sourceOwner, targetOwner: targetOwner) {
+                    let backup = baseURL.appending(path: "project-state-before-switch-\(UUID().uuidString).json")
+                    try secureAtomicWrite(originalBytes, to: backup)
+                    guard try readChecked(stateURL) == originalBytes else {
+                        throw CocoaError(.fileWriteUnknown)
+                    }
+                    try secureAtomicWrite(updated, to: stateURL)
+                }
+            }
+        }
+        #endif
         current.activeAccountID = id
         current.accounts[index].lastUsedAt = Date()
         try saveRegistry(current)

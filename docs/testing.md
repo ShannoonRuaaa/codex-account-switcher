@@ -24,6 +24,15 @@ Require the `Test run with ... tests ... passed` summary before treating the sui
 
 ## 2. Unit tests
 
+### Local project preservation (issue #44)
+
+See [project-state-preservation.md](project-state-preservation.md) for the supported
+legacy format, executed synthetic tests and required macOS account round trip.
+Run `swift test --filter 'LocalProjectHandoffTests|SwitchServiceTests|LocalSwitchIdentityTests'`
+and `python3 -B -m unittest discover -s scripts -p test_restore_codex_projects.py -v`.
+Windows verifies the merge algorithm but excludes the CryptoKit owner derivation
+and native macOS storage hook. Do not treat those checks as a live Desktop test.
+
 ### Windows Desktop process termination (issue #29)
 
 `DesktopCloseChecks` uses real processes in synthetic installation directories. Its WinForms window hides on close, reproducing the tray timeout. It covers visible, background, already hidden, minimized, headless and unresponsive Desktop processes; child/grandchild exit; an independent CLI using the same binary as Desktop's children; unrelated same-name process isolation; pre-cancellation; and Store path rediscovery. Closing forcibly terminates matched Desktop processes and their descendants, retaining process handles to verify exit before returning. `SwitchServiceTests.quitFailureLeavesBothAccountsUntouched` separately covers credential preservation on a close-stage error.

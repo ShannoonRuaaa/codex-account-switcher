@@ -235,6 +235,23 @@ Add each authorized account once. Finish or stop active Desktop tasks, then sele
 
 You choose and confirm every account. The app then completes the Codex Desktop handoff automatically. It does not rotate accounts in the background or switch based on usage thresholds.
 
+### Why did my projects disappear after switching accounts?
+
+On macOS, the switcher now prepares missing local project entries and chat assignments in the selected account's legacy sidebar snapshot after Desktop exits and the target credential is verified. Existing target entries take priority, cloud-backed projects are excluded, and a private copy of the original state is saved in the switcher's application support folder before each change. Newer Desktop state formats are left to Desktop. A project already registered under another ID for the same root is skipped to avoid duplicates. This compatibility path still needs a live macOS account round trip before release; it does not automatically reconcile intentional deletions or conflicting assignments across accounts.
+
+In affected Codex Desktop builds, the account switch can leave local projects and chat groupings in an inactive account snapshot while showing an empty Projects section. The [Codex Desktop account-switch issue](https://github.com/openai/codex/issues/60364) remains open; a [merged Desktop fix for related provider switching](https://github.com/openai/codex/issues/60604) has not been verified here as a fix for every account-switch case. Update Codex Desktop first.
+
+If projects are still missing and the active project catalog is empty, [the recovery tool](scripts/restore_codex_projects.py) can restore a preserved inactive snapshot. Fully quit Codex Desktop before running either command; the tool shows counts only, makes an exact backup before applying, and refuses to overwrite existing project metadata or choose between multiple snapshots automatically:
+
+```bash
+python3 scripts/restore_codex_projects.py
+python3 scripts/restore_codex_projects.py --apply
+```
+
+If the preview reports multiple snapshots, inspect their project and chat-assignment counts and pass `--source-index N` to both commands. Reopen Codex Desktop after applying. The tool does not merge partially populated catalogs or change databases, chat files, or credentials. Keep the state file and its backup private.
+
+See [local project preservation](docs/project-state-preservation.md) for supported formats, backup locations, undo instructions and the macOS release gate. The standalone recovery tool requires Python 3; on Windows use `py -3` in place of `python3`.
+
 ### Does my account data leave my computer?
 
 Saved account data stays in user-only local folders: `~/Library/Application Support/Codex Account Switcher/` on macOS and `%LOCALAPPDATA%\Codex Account Switcher\` on Windows. The app has no account proxy, traffic router, or cloud profile service.

@@ -12,6 +12,12 @@ This supersedes the initial Windows prototype's separate C# account implementati
 
 ## Boundaries
 
+The macOS legacy project-state handoff is documented in
+[project-state-preservation.md](project-state-preservation.md). Its merge code is
+shared and testable on both platforms; its storage hook currently requires
+CryptoKit and is inactive on Windows. It runs during the commit stage after
+target verification, with a private state backup before replacement.
+
 `SwitcherCore` owns policy and state. Platform adapters own filesystem permissions/atomic installation, executable discovery and launch, browser opening, Desktop close/open, tray integration, launch-at-login, and update installation. A Windows native client communicates with the Swift host through a private child-process stdio channel; it renders snapshots and invokes commands rather than reconstructing account policy in C#.
 
 Desktop close is platform-specific: macOS requests normal termination, while Windows force-terminates the matched Desktop process trees and verifies exit. Windows uses a dedicated localized confirmation warning about interrupted tasks and unsaved-state loss. Both adapters must finish closing successfully before the shared sequence changes credentials.
